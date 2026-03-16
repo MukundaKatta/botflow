@@ -1,0 +1,138 @@
+{
+  "name": "Restaurant Ordering",
+  "description": "Complete restaurant bot with menu browsing, ordering, reservations, and business hours",
+  "category": "restaurant",
+  "trigger_config": {
+    "triggerType": "message"
+  },
+  "flow_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "trigger",
+        "position": { "x": 300, "y": 0 },
+        "data": {
+          "label": "New Message",
+          "description": "When customer sends a message",
+          "config": { "triggerType": "message" }
+        }
+      },
+      {
+        "id": "ai-greet",
+        "type": "ai_response",
+        "position": { "x": 300, "y": 120 },
+        "data": {
+          "label": "AI Greeting & Router",
+          "description": "Greet customer and determine intent",
+          "config": {
+            "systemPrompt": "You are a friendly restaurant assistant. Determine what the customer wants: view menu, place order, make reservation, or ask about hours. Respond naturally and guide them.",
+            "temperature": 0.7,
+            "useKnowledgeBase": true
+          }
+        }
+      },
+      {
+        "id": "cond-intent",
+        "type": "condition",
+        "position": { "x": 300, "y": 260 },
+        "data": {
+          "label": "Is ordering?",
+          "description": "Check if customer wants to order",
+          "config": {
+            "conditionType": "contains",
+            "value": "order"
+          }
+        }
+      },
+      {
+        "id": "msg-menu",
+        "type": "message",
+        "position": { "x": 100, "y": 400 },
+        "data": {
+          "label": "Send Menu",
+          "description": "Display the menu",
+          "config": {
+            "messageText": "Here's our menu! Reply with item numbers to order:\n\n1. Classic Burger - $12.99\n2. Margherita Pizza - $14.99\n3. Caesar Salad - $9.99\n4. Grilled Salmon - $18.99\n5. Pasta Carbonara - $13.99\n\nOr type 'specials' for today's specials!"
+          }
+        }
+      },
+      {
+        "id": "ai-other",
+        "type": "ai_response",
+        "position": { "x": 500, "y": 400 },
+        "data": {
+          "label": "AI Handle Query",
+          "description": "Handle reservations, hours, and other questions",
+          "config": {
+            "systemPrompt": "Help the customer with their restaurant query. For reservations, collect: date, time, party size, and name. For hours, share our schedule. Be warm and helpful.",
+            "temperature": 0.7,
+            "useKnowledgeBase": true
+          }
+        }
+      },
+      {
+        "id": "ai-order",
+        "type": "ai_response",
+        "position": { "x": 100, "y": 540 },
+        "data": {
+          "label": "Process Order",
+          "description": "Confirm and process the order",
+          "config": {
+            "systemPrompt": "Help the customer complete their order. Confirm items, ask about customizations, calculate total. When order is confirmed, summarize it clearly.",
+            "temperature": 0.5,
+            "useKnowledgeBase": true
+          }
+        }
+      },
+      {
+        "id": "action-tag",
+        "type": "action",
+        "position": { "x": 100, "y": 680 },
+        "data": {
+          "label": "Tag as Customer",
+          "config": {
+            "actionType": "add_tag",
+            "actionValue": "ordered"
+          }
+        }
+      },
+      {
+        "id": "msg-confirm",
+        "type": "message",
+        "position": { "x": 100, "y": 800 },
+        "data": {
+          "label": "Order Confirmation",
+          "config": {
+            "messageText": "Your order has been received! We'll have it ready in approximately 25-35 minutes. Thank you, {{name}}! If you need anything else, just message us."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "ai-greet", "animated": true },
+      { "id": "e2", "source": "ai-greet", "target": "cond-intent", "animated": true },
+      { "id": "e3", "source": "cond-intent", "target": "msg-menu", "sourceHandle": "yes", "animated": true },
+      { "id": "e4", "source": "cond-intent", "target": "ai-other", "sourceHandle": "no", "animated": true },
+      { "id": "e5", "source": "msg-menu", "target": "ai-order", "animated": true },
+      { "id": "e6", "source": "ai-order", "target": "action-tag", "animated": true },
+      { "id": "e7", "source": "action-tag", "target": "msg-confirm", "animated": true }
+    ]
+  },
+  "knowledge_base": [
+    {
+      "title": "Menu",
+      "content": "Our menu includes:\n- Classic Burger: $12.99 (beef patty, lettuce, tomato, cheese, special sauce)\n- Margherita Pizza: $14.99 (fresh mozzarella, basil, tomato sauce)\n- Caesar Salad: $9.99 (romaine, parmesan, croutons, caesar dressing)\n- Grilled Salmon: $18.99 (with seasonal vegetables and lemon butter)\n- Pasta Carbonara: $13.99 (spaghetti, pancetta, egg, parmesan)\n\nAll entrees come with your choice of side (fries, salad, or soup).\nAdd a drink for $2.99.",
+      "category": "Menu"
+    },
+    {
+      "title": "Business Hours",
+      "content": "We are open:\n- Monday to Thursday: 11:00 AM - 10:00 PM\n- Friday & Saturday: 11:00 AM - 11:00 PM\n- Sunday: 12:00 PM - 9:00 PM\n\nKitchen closes 30 minutes before closing time.\nWe accept reservations for parties of 4 or more.",
+      "category": "Hours"
+    },
+    {
+      "title": "Delivery & Pickup",
+      "content": "We offer both delivery and pickup:\n- Pickup: Order ahead and pick up at our location\n- Delivery: Available within 5 miles, $3.99 delivery fee, free delivery on orders over $30\n- Estimated delivery time: 30-45 minutes\n- Minimum order for delivery: $15",
+      "category": "Delivery"
+    }
+  ]
+}

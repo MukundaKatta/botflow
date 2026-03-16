@@ -1,0 +1,162 @@
+{
+  "name": "Appointment Booking",
+  "description": "Clinic or service appointment scheduling with reminders and FAQ",
+  "category": "healthcare",
+  "trigger_config": {
+    "triggerType": "message"
+  },
+  "flow_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "trigger",
+        "position": { "x": 300, "y": 0 },
+        "data": {
+          "label": "New Message",
+          "config": { "triggerType": "message" }
+        }
+      },
+      {
+        "id": "ai-welcome",
+        "type": "ai_response",
+        "position": { "x": 300, "y": 120 },
+        "data": {
+          "label": "AI Welcome & Intent",
+          "description": "Welcome and determine if booking, rescheduling, or FAQ",
+          "config": {
+            "systemPrompt": "You are a friendly clinic receptionist. Determine if the patient wants to: book an appointment, reschedule, cancel, or ask a question. Collect their name if not known. Be professional and empathetic.",
+            "temperature": 0.6,
+            "useKnowledgeBase": true
+          }
+        }
+      },
+      {
+        "id": "cond-booking",
+        "type": "condition",
+        "position": { "x": 300, "y": 260 },
+        "data": {
+          "label": "Wants to book?",
+          "config": {
+            "conditionType": "regex",
+            "value": "book|appointment|schedule|available"
+          }
+        }
+      },
+      {
+        "id": "ai-collect-info",
+        "type": "ai_response",
+        "position": { "x": 100, "y": 400 },
+        "data": {
+          "label": "Collect Booking Info",
+          "description": "Ask for preferred date, time, service type",
+          "config": {
+            "systemPrompt": "Collect the following for the appointment:\n1. Type of visit (General checkup, Dental cleaning, Eye exam, etc.)\n2. Preferred date\n3. Preferred time (morning, afternoon, or specific time)\n4. Patient name and contact number\n\nAsk for one piece of information at a time. Be patient and clear.",
+            "temperature": 0.5,
+            "useKnowledgeBase": true
+          }
+        }
+      },
+      {
+        "id": "ai-faq",
+        "type": "ai_response",
+        "position": { "x": 500, "y": 400 },
+        "data": {
+          "label": "Answer FAQ",
+          "config": {
+            "systemPrompt": "Answer the patient's question using the knowledge base. If you can't answer, offer to connect them with the clinic directly.",
+            "temperature": 0.7,
+            "useKnowledgeBase": true
+          }
+        }
+      },
+      {
+        "id": "http-check",
+        "type": "http_request",
+        "position": { "x": 100, "y": 540 },
+        "data": {
+          "label": "Check Availability",
+          "description": "Check calendar availability",
+          "config": {
+            "method": "GET",
+            "url": "https://api.example.com/availability?date={{date}}",
+            "headers": "{}"
+          }
+        }
+      },
+      {
+        "id": "msg-confirm",
+        "type": "message",
+        "position": { "x": 100, "y": 680 },
+        "data": {
+          "label": "Confirm Booking",
+          "config": {
+            "messageText": "Your appointment has been booked!\n\nService: {{service_type}}\nDate: {{date}}\nTime: {{time}}\nPatient: {{name}}\n\nYou'll receive a reminder 24 hours before your appointment. To reschedule or cancel, just message us.\n\nSee you soon!"
+          }
+        }
+      },
+      {
+        "id": "action-tag",
+        "type": "action",
+        "position": { "x": 100, "y": 820 },
+        "data": {
+          "label": "Tag as Patient",
+          "config": {
+            "actionType": "add_tag",
+            "actionValue": "appointment-booked"
+          }
+        }
+      },
+      {
+        "id": "delay-reminder",
+        "type": "delay",
+        "position": { "x": 100, "y": 940 },
+        "data": {
+          "label": "Wait for Reminder",
+          "config": {
+            "duration": 24,
+            "unit": "hours"
+          }
+        }
+      },
+      {
+        "id": "msg-reminder",
+        "type": "message",
+        "position": { "x": 100, "y": 1060 },
+        "data": {
+          "label": "Send Reminder",
+          "config": {
+            "messageText": "Hi {{name}}, this is a reminder that your appointment is tomorrow. Please arrive 10 minutes early. If you need to reschedule, reply to this message. See you soon!"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "ai-welcome", "animated": true },
+      { "id": "e2", "source": "ai-welcome", "target": "cond-booking", "animated": true },
+      { "id": "e3", "source": "cond-booking", "target": "ai-collect-info", "sourceHandle": "yes", "animated": true },
+      { "id": "e4", "source": "cond-booking", "target": "ai-faq", "sourceHandle": "no", "animated": true },
+      { "id": "e5", "source": "ai-collect-info", "target": "http-check", "animated": true },
+      { "id": "e6", "source": "http-check", "target": "msg-confirm", "animated": true },
+      { "id": "e7", "source": "msg-confirm", "target": "action-tag", "animated": true },
+      { "id": "e8", "source": "action-tag", "target": "delay-reminder", "animated": true },
+      { "id": "e9", "source": "delay-reminder", "target": "msg-reminder", "animated": true }
+    ]
+  },
+  "knowledge_base": [
+    {
+      "title": "Services Offered",
+      "content": "We offer the following services:\n- General Checkup: 30 min, $75\n- Dental Cleaning: 45 min, $120\n- Eye Exam: 30 min, $90\n- Physical Therapy: 60 min, $150\n- Consultation: 15 min, $50\n\nAll new patients receive a complimentary consultation.",
+      "category": "Services"
+    },
+    {
+      "title": "Insurance & Payment",
+      "content": "We accept most major insurance plans including:\n- Blue Cross Blue Shield\n- Aetna\n- UnitedHealthcare\n- Cigna\n- Medicare\n\nWe also offer payment plans for uninsured patients. Co-pays are due at time of visit.",
+      "category": "Insurance"
+    },
+    {
+      "title": "Clinic Hours & Location",
+      "content": "Hours:\n- Monday-Friday: 8:00 AM - 6:00 PM\n- Saturday: 9:00 AM - 2:00 PM\n- Sunday: Closed\n\nEmergency line available 24/7.\nLocation: 123 Health Street, Suite 100\nParking available in the rear lot.",
+      "category": "Hours"
+    }
+  ]
+}

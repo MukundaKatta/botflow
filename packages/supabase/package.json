@@ -1,0 +1,11 @@
+{
+  "name": "@botflow/supabase",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "db:push": "supabase db push",
+    "db:reset": "supabase db reset",
+    "functions:serve": "supabase functions serve",
+    "functions:deploy": "supabase functions deploy"
+  }
+}

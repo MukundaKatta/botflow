@@ -1,0 +1,137 @@
+{
+  "name": "Event RSVP",
+  "description": "Event registration and RSVP management with reminders and attendee tracking",
+  "category": "events",
+  "trigger_config": {
+    "triggerType": "keyword",
+    "keywords": "rsvp, event, register, attend, tickets"
+  },
+  "flow_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "trigger",
+        "position": { "x": 300, "y": 0 },
+        "data": {
+          "label": "RSVP Keyword",
+          "config": { "triggerType": "keyword", "keywords": "rsvp, event, register, attend, tickets" }
+        }
+      },
+      {
+        "id": "msg-event-info",
+        "type": "message",
+        "position": { "x": 300, "y": 120 },
+        "data": {
+          "label": "Event Details",
+          "config": {
+            "messageText": "Welcome! Here are the event details:\n\nAnnual Tech Summit 2026\nDate: April 15, 2026\nTime: 9:00 AM - 5:00 PM\nVenue: Convention Center, Hall A\n\nWould you like to register? Reply YES to RSVP!"
+          }
+        }
+      },
+      {
+        "id": "cond-rsvp",
+        "type": "condition",
+        "position": { "x": 300, "y": 280 },
+        "data": {
+          "label": "Confirmed?",
+          "config": {
+            "conditionType": "regex",
+            "value": "yes|yeah|sure|confirm|register"
+          }
+        }
+      },
+      {
+        "id": "ai-collect",
+        "type": "ai_response",
+        "position": { "x": 100, "y": 420 },
+        "data": {
+          "label": "Collect RSVP Info",
+          "config": {
+            "systemPrompt": "Collect the attendee's registration information:\n1. Full name\n2. Email address\n3. Number of guests (max 2 additional)\n4. Dietary restrictions (if any)\n5. Any accessibility needs\n\nAsk naturally, one question at a time.",
+            "temperature": 0.5,
+            "useKnowledgeBase": true
+          }
+        }
+      },
+      {
+        "id": "msg-decline",
+        "type": "message",
+        "position": { "x": 500, "y": 420 },
+        "data": {
+          "label": "Decline Response",
+          "config": {
+            "messageText": "No problem! If you change your mind, just message us 'RSVP' and we'll get you registered. Hope to see you at a future event!"
+          }
+        }
+      },
+      {
+        "id": "action-tag-rsvp",
+        "type": "action",
+        "position": { "x": 100, "y": 560 },
+        "data": {
+          "label": "Tag RSVP",
+          "config": {
+            "actionType": "add_tag",
+            "actionValue": "event-rsvp-confirmed"
+          }
+        }
+      },
+      {
+        "id": "msg-confirmation",
+        "type": "message",
+        "position": { "x": 100, "y": 680 },
+        "data": {
+          "label": "RSVP Confirmation",
+          "config": {
+            "messageText": "You're registered! Here's your confirmation:\n\nEvent: Annual Tech Summit 2026\nAttendee: {{name}}\nDate: April 15, 2026\nVenue: Convention Center, Hall A\n\nSave this message as your ticket. We'll send a reminder the day before. See you there!"
+          }
+        }
+      },
+      {
+        "id": "delay-reminder",
+        "type": "delay",
+        "position": { "x": 100, "y": 820 },
+        "data": {
+          "label": "Wait Until Day Before",
+          "config": {
+            "duration": 24,
+            "unit": "hours"
+          }
+        }
+      },
+      {
+        "id": "msg-reminder",
+        "type": "message",
+        "position": { "x": 100, "y": 940 },
+        "data": {
+          "label": "Event Reminder",
+          "config": {
+            "messageText": "Reminder: The Annual Tech Summit is TOMORROW!\n\nDate: April 15, 2026\nTime: 9:00 AM - 5:00 PM\nVenue: Convention Center, Hall A\nCheck-in opens at 8:30 AM\n\nDon't forget to bring this message as your ticket. See you there, {{name}}!"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "msg-event-info", "animated": true },
+      { "id": "e2", "source": "msg-event-info", "target": "cond-rsvp", "animated": true },
+      { "id": "e3", "source": "cond-rsvp", "target": "ai-collect", "sourceHandle": "yes", "animated": true },
+      { "id": "e4", "source": "cond-rsvp", "target": "msg-decline", "sourceHandle": "no", "animated": true },
+      { "id": "e5", "source": "ai-collect", "target": "action-tag-rsvp", "animated": true },
+      { "id": "e6", "source": "action-tag-rsvp", "target": "msg-confirmation", "animated": true },
+      { "id": "e7", "source": "msg-confirmation", "target": "delay-reminder", "animated": true },
+      { "id": "e8", "source": "delay-reminder", "target": "msg-reminder", "animated": true }
+    ]
+  },
+  "knowledge_base": [
+    {
+      "title": "Event Details",
+      "content": "Annual Tech Summit 2026\nDate: April 15, 2026\nTime: 9:00 AM - 5:00 PM\nVenue: Convention Center, Hall A\n\nAgenda:\n- 9:00 AM: Registration & Coffee\n- 9:30 AM: Keynote - Future of AI\n- 10:30 AM: Breakout Sessions\n- 12:00 PM: Networking Lunch\n- 1:30 PM: Workshop Track\n- 3:30 PM: Panel Discussion\n- 4:30 PM: Closing & Cocktail Hour\n\nFree parking available. Public transit: Bus routes 12, 15, 23.",
+      "category": "Event"
+    },
+    {
+      "title": "FAQ",
+      "content": "Q: Is the event free?\nA: Yes, the event is free but registration is required.\n\nQ: Can I bring guests?\nA: Yes, up to 2 additional guests per registration.\n\nQ: Is there a dress code?\nA: Business casual.\n\nQ: Will there be food?\nA: Yes, complimentary lunch and refreshments. Please let us know about dietary restrictions.\n\nQ: Can I cancel my RSVP?\nA: Yes, just message us and we'll update your registration.",
+      "category": "FAQ"
+    }
+  ]
+}

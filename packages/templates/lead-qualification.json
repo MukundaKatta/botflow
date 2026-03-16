@@ -1,0 +1,177 @@
+{
+  "name": "Lead Qualification",
+  "description": "Capture lead information, score leads, and route qualified prospects to sales",
+  "category": "sales",
+  "trigger_config": {
+    "triggerType": "message"
+  },
+  "flow_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "trigger",
+        "position": { "x": 300, "y": 0 },
+        "data": {
+          "label": "New Lead Message",
+          "config": { "triggerType": "message" }
+        }
+      },
+      {
+        "id": "msg-welcome",
+        "type": "message",
+        "position": { "x": 300, "y": 120 },
+        "data": {
+          "label": "Welcome",
+          "config": {
+            "messageText": "Hi there! Thanks for reaching out. I'd love to learn more about your needs so I can connect you with the right solution. Can I ask you a few quick questions?"
+          }
+        }
+      },
+      {
+        "id": "ai-qualify",
+        "type": "ai_response",
+        "position": { "x": 300, "y": 260 },
+        "data": {
+          "label": "AI Qualification",
+          "description": "Conversationally collect lead info",
+          "config": {
+            "systemPrompt": "You are a friendly sales qualification assistant. Collect the following information naturally through conversation (ask one question at a time):\n1. Their name\n2. Company name and size (number of employees)\n3. What problem they're trying to solve\n4. Their budget range\n5. Timeline for making a decision\n\nBe conversational, not robotic. Acknowledge their answers before asking the next question. If they ask about pricing, give general ranges from the knowledge base.",
+            "temperature": 0.7,
+            "useKnowledgeBase": true
+          }
+        }
+      },
+      {
+        "id": "cond-qualified",
+        "type": "condition",
+        "position": { "x": 300, "y": 400 },
+        "data": {
+          "label": "Budget > $500?",
+          "description": "Check if lead meets minimum criteria",
+          "config": {
+            "conditionType": "regex",
+            "value": "\\$?[5-9]\\d{2}|\\$?\\d{4,}|thousand|k\\b"
+          }
+        }
+      },
+      {
+        "id": "action-hot-lead",
+        "type": "action",
+        "position": { "x": 100, "y": 540 },
+        "data": {
+          "label": "Tag Hot Lead",
+          "config": {
+            "actionType": "add_tag",
+            "actionValue": "hot-lead"
+          }
+        }
+      },
+      {
+        "id": "action-notify-sales",
+        "type": "action",
+        "position": { "x": 100, "y": 660 },
+        "data": {
+          "label": "Notify Sales Team",
+          "config": {
+            "actionType": "notify",
+            "actionValue": "sales@company.com"
+          }
+        }
+      },
+      {
+        "id": "msg-qualified",
+        "type": "message",
+        "position": { "x": 100, "y": 780 },
+        "data": {
+          "label": "Qualified Response",
+          "config": {
+            "messageText": "Thank you for sharing that, {{name}}! Based on what you've told me, I think our team can really help. I'm going to connect you with one of our specialists who can give you a personalized demo. They'll reach out within the next few hours. Is there anything else you'd like to know in the meantime?"
+          }
+        }
+      },
+      {
+        "id": "action-handoff",
+        "type": "action",
+        "position": { "x": 100, "y": 900 },
+        "data": {
+          "label": "Hand Off to Sales",
+          "config": {
+            "actionType": "handoff",
+            "actionValue": ""
+          }
+        }
+      },
+      {
+        "id": "action-nurture-tag",
+        "type": "action",
+        "position": { "x": 500, "y": 540 },
+        "data": {
+          "label": "Tag for Nurturing",
+          "config": {
+            "actionType": "add_tag",
+            "actionValue": "nurture-sequence"
+          }
+        }
+      },
+      {
+        "id": "msg-nurture",
+        "type": "message",
+        "position": { "x": 500, "y": 660 },
+        "data": {
+          "label": "Nurture Response",
+          "config": {
+            "messageText": "Thanks for your interest, {{name}}! I've noted your details. In the meantime, check out our resources at example.com/resources - they might help with what you're looking for. Feel free to message back anytime with questions!"
+          }
+        }
+      },
+      {
+        "id": "delay-followup",
+        "type": "delay",
+        "position": { "x": 500, "y": 780 },
+        "data": {
+          "label": "Wait 3 Days",
+          "config": {
+            "duration": 3,
+            "unit": "days"
+          }
+        }
+      },
+      {
+        "id": "msg-followup",
+        "type": "message",
+        "position": { "x": 500, "y": 900 },
+        "data": {
+          "label": "Follow-up",
+          "config": {
+            "messageText": "Hi {{name}}, just checking in! Have you had a chance to look at our resources? I'd be happy to answer any questions or schedule a quick call if you'd like to learn more."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "msg-welcome", "animated": true },
+      { "id": "e2", "source": "msg-welcome", "target": "ai-qualify", "animated": true },
+      { "id": "e3", "source": "ai-qualify", "target": "cond-qualified", "animated": true },
+      { "id": "e4", "source": "cond-qualified", "target": "action-hot-lead", "sourceHandle": "yes", "animated": true },
+      { "id": "e5", "source": "cond-qualified", "target": "action-nurture-tag", "sourceHandle": "no", "animated": true },
+      { "id": "e6", "source": "action-hot-lead", "target": "action-notify-sales", "animated": true },
+      { "id": "e7", "source": "action-notify-sales", "target": "msg-qualified", "animated": true },
+      { "id": "e8", "source": "msg-qualified", "target": "action-handoff", "animated": true },
+      { "id": "e9", "source": "action-nurture-tag", "target": "msg-nurture", "animated": true },
+      { "id": "e10", "source": "msg-nurture", "target": "delay-followup", "animated": true },
+      { "id": "e11", "source": "delay-followup", "target": "msg-followup", "animated": true }
+    ]
+  },
+  "knowledge_base": [
+    {
+      "title": "Pricing Plans",
+      "content": "Our pricing tiers:\n- Starter: $49/month - Up to 1,000 contacts, 1 user\n- Growth: $149/month - Up to 10,000 contacts, 5 users\n- Business: $399/month - Up to 50,000 contacts, 15 users\n- Enterprise: Custom pricing - Unlimited contacts, unlimited users\n\nAll plans include: 14-day free trial, email support, API access\nAnnual billing saves 20%.",
+      "category": "Pricing"
+    },
+    {
+      "title": "Product Features",
+      "content": "Key features:\n- AI-powered automation\n- Multi-channel messaging (WhatsApp, SMS, Instagram)\n- Visual flow builder\n- Contact CRM\n- Analytics dashboard\n- Team collaboration\n- API & webhooks\n- Custom integrations\n\nBest for: E-commerce, SaaS, Agencies, Healthcare, Real Estate",
+      "category": "Features"
+    }
+  ]
+}

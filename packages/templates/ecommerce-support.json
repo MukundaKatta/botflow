@@ -1,0 +1,177 @@
+{
+  "name": "E-commerce Support",
+  "description": "Customer support bot for online stores with order tracking, returns, and recommendations",
+  "category": "ecommerce",
+  "trigger_config": {
+    "triggerType": "message"
+  },
+  "flow_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "trigger",
+        "position": { "x": 300, "y": 0 },
+        "data": {
+          "label": "Customer Message",
+          "config": { "triggerType": "message" }
+        }
+      },
+      {
+        "id": "ai-router",
+        "type": "ai_response",
+        "position": { "x": 300, "y": 120 },
+        "data": {
+          "label": "AI Intent Router",
+          "description": "Determine customer intent",
+          "config": {
+            "systemPrompt": "You are a friendly e-commerce support agent. Determine if the customer needs: order tracking, returns/refunds, product info, or general help. Ask for their order number if relevant. Be helpful and concise.",
+            "temperature": 0.6,
+            "useKnowledgeBase": true
+          }
+        }
+      },
+      {
+        "id": "cond-order",
+        "type": "condition",
+        "position": { "x": 300, "y": 260 },
+        "data": {
+          "label": "Order inquiry?",
+          "config": {
+            "conditionType": "regex",
+            "value": "order|tracking|delivery|shipped|where"
+          }
+        }
+      },
+      {
+        "id": "http-order",
+        "type": "http_request",
+        "position": { "x": 100, "y": 400 },
+        "data": {
+          "label": "Lookup Order",
+          "config": {
+            "method": "GET",
+            "url": "https://api.example.com/orders/{{order_number}}",
+            "headers": "{\"Authorization\": \"Bearer {{api_key}}\"}"
+          }
+        }
+      },
+      {
+        "id": "ai-order-status",
+        "type": "ai_response",
+        "position": { "x": 100, "y": 540 },
+        "data": {
+          "label": "Share Order Status",
+          "config": {
+            "systemPrompt": "Share the order status with the customer based on the API response data available in context. If the order was not found, apologize and ask them to double-check the order number.",
+            "temperature": 0.5,
+            "useKnowledgeBase": false
+          }
+        }
+      },
+      {
+        "id": "cond-return",
+        "type": "condition",
+        "position": { "x": 500, "y": 400 },
+        "data": {
+          "label": "Return request?",
+          "config": {
+            "conditionType": "regex",
+            "value": "return|refund|exchange|broken|damaged"
+          }
+        }
+      },
+      {
+        "id": "ai-return",
+        "type": "ai_response",
+        "position": { "x": 400, "y": 540 },
+        "data": {
+          "label": "Process Return",
+          "config": {
+            "systemPrompt": "Help the customer with their return request. Collect: order number, item to return, reason for return. Explain our 30-day return policy. For damaged items, ask for a photo.",
+            "temperature": 0.5,
+            "useKnowledgeBase": true
+          }
+        }
+      },
+      {
+        "id": "action-return-tag",
+        "type": "action",
+        "position": { "x": 400, "y": 680 },
+        "data": {
+          "label": "Tag Return Request",
+          "config": {
+            "actionType": "add_tag",
+            "actionValue": "return-requested"
+          }
+        }
+      },
+      {
+        "id": "action-handoff",
+        "type": "action",
+        "position": { "x": 400, "y": 800 },
+        "data": {
+          "label": "Handoff to Human",
+          "description": "Complex returns need human review",
+          "config": {
+            "actionType": "handoff",
+            "actionValue": ""
+          }
+        }
+      },
+      {
+        "id": "ai-general",
+        "type": "ai_response",
+        "position": { "x": 650, "y": 540 },
+        "data": {
+          "label": "General Support",
+          "config": {
+            "systemPrompt": "Help the customer with their query. Suggest relevant products if appropriate. Be friendly and offer to connect with a human agent if needed.",
+            "temperature": 0.7,
+            "useKnowledgeBase": true
+          }
+        }
+      },
+      {
+        "id": "msg-satisfaction",
+        "type": "message",
+        "position": { "x": 300, "y": 940 },
+        "data": {
+          "label": "Satisfaction Check",
+          "config": {
+            "messageText": "Is there anything else I can help you with? You can also rate your experience by replying 1-5 (5 being excellent)."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "ai-router", "animated": true },
+      { "id": "e2", "source": "ai-router", "target": "cond-order", "animated": true },
+      { "id": "e3", "source": "cond-order", "target": "http-order", "sourceHandle": "yes", "animated": true },
+      { "id": "e4", "source": "cond-order", "target": "cond-return", "sourceHandle": "no", "animated": true },
+      { "id": "e5", "source": "http-order", "target": "ai-order-status", "animated": true },
+      { "id": "e6", "source": "cond-return", "target": "ai-return", "sourceHandle": "yes", "animated": true },
+      { "id": "e7", "source": "cond-return", "target": "ai-general", "sourceHandle": "no", "animated": true },
+      { "id": "e8", "source": "ai-return", "target": "action-return-tag", "animated": true },
+      { "id": "e9", "source": "action-return-tag", "target": "action-handoff", "animated": true },
+      { "id": "e10", "source": "ai-order-status", "target": "msg-satisfaction", "animated": true },
+      { "id": "e11", "source": "ai-general", "target": "msg-satisfaction", "animated": true }
+    ]
+  },
+  "knowledge_base": [
+    {
+      "title": "Return Policy",
+      "content": "Return Policy:\n- 30-day return window from delivery date\n- Items must be in original condition with tags\n- Free returns for damaged or defective items\n- Refund processed within 5-7 business days\n- Store credit option available (instant)\n- Exchanges available for different size/color\n- Final sale items cannot be returned\n\nTo start a return: provide order number and reason.",
+      "category": "Returns"
+    },
+    {
+      "title": "Shipping Information",
+      "content": "Shipping Options:\n- Standard (5-7 days): Free on orders $50+, otherwise $5.99\n- Express (2-3 days): $12.99\n- Next Day: $24.99\n- International: 7-14 days, varies by location\n\nAll orders include tracking. You'll receive tracking info via email within 24 hours of shipment.",
+      "category": "Shipping"
+    },
+    {
+      "title": "Popular Products",
+      "content": "Our bestsellers this month:\n1. Wireless Earbuds Pro - $79.99 (4.8 stars)\n2. Organic Cotton T-Shirt - $29.99 (4.7 stars)\n3. Smart Water Bottle - $34.99 (4.6 stars)\n4. Laptop Stand - $49.99 (4.9 stars)\n5. Aromatherapy Diffuser - $39.99 (4.5 stars)\n\nAll products come with a 1-year warranty.",
+      "category": "Products"
+    }
+  ]
+}
