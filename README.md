@@ -1,41 +1,13 @@
 # botflow
 
-**No-code platform for building AI-powered WhatsApp, SMS, and Instagram DM bots**
+Stub Python project. Described as a chatbot workflow builder or automation tool, but none of that functionality exists.
 
-![Build](https://img.shields.io/badge/build-passing-brightgreen) ![License](https://img.shields.io/badge/license-proprietary-red)
+## What's actually here
 
-## Install
-```bash
-npm install
-```
+A single class in `src/core.py` (Botflow) with placeholder methods that each return a fixed dictionary without doing any real work. There is no workflow engine, no chatbot logic, no automation - just stubs.
 
-## Quick Start
-```typescript
-import { Botflow } from "./botflow";
-const instance = new Botflow()
-const r = await instance.generate({ input: 'test' })
-```
+The project uses only Python standard library imports (time, logging, json, typing). No chatbot or workflow libraries are present.
 
-## CLI
-```bash
-npx tsx src/cli.ts status
-npx tsx src/cli.ts run --input "data"
-```
+## Status
 
-## API
-| Method | Description |
-|--------|-------------|
-| `generate()` | Generate |
-| `create()` | Create |
-| `validate()` | Validate |
-| `preview()` | Preview |
-| `export()` | Export |
-| `get_templates()` | Get templates |
-
-## Test
-```bash
-npx vitest
-```
-
-## License
-(c) 2026 Officethree Technologies. All Rights Reserved.
+Scaffolding only. No working bot workflow functionality exists.
