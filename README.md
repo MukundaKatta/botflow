@@ -1,27 +1,41 @@
-# BotFlow
+# botflow
 
-> No-Code AI Chatbot Builder
+**No-code platform for building AI-powered WhatsApp, SMS, and Instagram DM bots**
 
-## Overview
+![Build](https://img.shields.io/badge/build-passing-brightgreen) ![License](https://img.shields.io/badge/license-proprietary-red)
 
-BotFlow lets you build AI-powered chatbots for WhatsApp, SMS, and Instagram DM without writing code. Drag-and-drop flow builder with AI-powered responses, lead capture, and automated follow-ups.
-
-## Key Features
-
-- ****
-
-## Tech Stack
-
-Python,FastAPI,React,Twilio,Meta API,Claude API
-
-## Getting Started
-
+## Install
 ```bash
-git clone https://github.com/MukundaKatta/botflow.git
-cd botflow
-pip install -e .
+npm install
 ```
 
----
+## Quick Start
+```typescript
+import { Botflow } from "./botflow";
+const instance = new Botflow()
+const r = await instance.generate({ input: 'test' })
+```
 
-**Mukunda Katta** · [Officethree Technologies](https://github.com/MukundaKatta/Office3) · 2026
+## CLI
+```bash
+npx tsx src/cli.ts status
+npx tsx src/cli.ts run --input "data"
+```
+
+## API
+| Method | Description |
+|--------|-------------|
+| `generate()` | Generate |
+| `create()` | Create |
+| `validate()` | Validate |
+| `preview()` | Preview |
+| `export()` | Export |
+| `get_templates()` | Get templates |
+
+## Test
+```bash
+npx vitest
+```
+
+## License
+(c) 2026 Officethree Technologies. All Rights Reserved.
