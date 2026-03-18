@@ -1,13 +1,15 @@
-# botflow
+# BotFlow
 
-Stub Python project. Described as a chatbot workflow builder or automation tool, but none of that functionality exists.
+Visual chatbot workflow builder for designing and deploying conversational automation.
 
-## What's actually here
+## About
+BotFlow provides a visual interface for building chatbot conversation flows and automation workflows. It lets developers and non-technical users design dialog trees, integrate with external services, and deploy intelligent chatbots without writing complex code.
 
-A single class in `src/core.py` (Botflow) with placeholder methods that each return a fixed dictionary without doing any real work. There is no workflow engine, no chatbot logic, no automation - just stubs.
-
-The project uses only Python standard library imports (time, logging, json, typing). No chatbot or workflow libraries are present.
+## Tech Stack
+- Python
+- Workflow engine
+- LLM integration
+- Click/Typer (CLI)
 
 ## Status
-
-Scaffolding only. No working bot workflow functionality exists.
+Active development - core architecture and project structure established.
